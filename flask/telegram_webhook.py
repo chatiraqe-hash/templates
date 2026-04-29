@@ -1,10 +1,11 @@
+import os
 import requests
 from flask import request, jsonify
 
-TELEGRAM_TOKEN = "YOUR_BOT_TOKEN"
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-def handle_telegram():
+ handle_telegram():
     data = request.json
 
     message = data.get("message", {})
