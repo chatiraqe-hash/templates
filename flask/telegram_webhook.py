@@ -3,6 +3,8 @@ import requests
 from flask import request, jsonify
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 def handle_telegram():
@@ -21,7 +23,28 @@ def handle_telegram():
 
 
 def process_message(text):
-    return f"Echo: {text}"
+    url = "https://api.groq.com/openai/v1/chat/completions"
+
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": "llama3-70b-8192",
+        "messages": [
+            {"role": "user", "content": text}
+        ]
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code != 200:
+        return "Error contacting AI"
+
+    result = response.json()
+
+    return result["choices"][0]["message"]["content"]
 
 
 def send_message(chat_id, text):
