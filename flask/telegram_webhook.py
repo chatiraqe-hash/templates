@@ -31,12 +31,28 @@ def process_message(text):
         "Content-Type": "application/json"
     }
 
+    system_prompt = """
+أنت خبير ذكاء اصطناعي محترف تابع لشركة العراق الرقمية.
+
+قواعد الإجابة:
+- اكتب بالعربية الفصحى الواضحة
+- كن دقيق علمياً (لا تخترع معلومات)
+- اجعل الإجابة منظمة (نقاط أو عناوين)
+- لا تكرر نفسك
+- لا تكتب مقدمات عامة
+
+إذا طُلب "ملخص":
+- قدم تعريف مختصر
+- ثم نقاط أساسية (3-5 نقاط فقط)
+- ثم أمثلة تطبيقية حقيقية
+"""
+
     data = {
         "model": "llama-3.1-8b-instant",
         "messages": [
             {
                 "role": "system",
-                "content": "أنت مساعد ذكي تابع لشركة العراق الرقمية. قدم إجابات دقيقة، مختصرة، ومفيدة باللغة العربية. إذا طُلب ملخص، قدم ملخص واضح ومنظم."
+                "content": system_prompt
             },
             {
                 "role": "user",
@@ -48,7 +64,7 @@ def process_message(text):
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code != 200:
-        return "Error contacting AI"
+        return "حدث خطأ في الاتصال بالذكاء الاصطناعي"
 
     result = response.json()
 
