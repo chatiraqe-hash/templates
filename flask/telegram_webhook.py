@@ -17,19 +17,17 @@ def handle_telegram():
 
     try:
         if not text:
-            reply = "أرسل رسالة نصية لأتمكن من مساعدتك."
+            reply = "أرسل طلبك."
         elif text == "/start":
             reply = start_message()
-        elif text == "/help":
-            reply = help_message()
         elif text == "/menu":
             reply = menu_message()
-        elif text == "/about":
-            reply = about_message()
+        elif text == "/templates":
+            reply = templates_menu()
         else:
-            reply = process_message(text)
+            reply = route_request(text)
     except Exception:
-        reply = "حدث خطأ مؤقت، حاول مرة أخرى."
+        reply = "حدث خطأ مؤقت."
 
     if chat_id:
         send_message(chat_id, reply)
@@ -37,51 +35,94 @@ def handle_telegram():
     return jsonify({"status": "ok"})
 
 
+# ========================
+# COMMANDS
+# ========================
+
 def start_message():
-    return (
-        "مرحباً بك في شركة العراق الرقمية.\n\n"
-        "أنا مساعد ذكي يعمل بالذكاء الاصطناعي.\n"
-        "اكتب سؤالك مباشرة، أو استخدم /menu لعرض الخيارات."
-    )
-
-
-def help_message():
-    return (
-        "طريقة الاستخدام:\n\n"
-        "- اكتب أي سؤال وسأجيبك مباشرة.\n"
-        "- اكتب: اشرح لي ... للحصول على شرح.\n"
-        "- اكتب: لخص ... للحصول على ملخص.\n"
-        "- اكتب: اعطني خطة ... للحصول على خطة منظمة.\n\n"
-        "الأوامر:\n"
-        "/start - بداية البوت\n"
-        "/menu - عرض القائمة\n"
-        "/about - معلومات عن الشركة\n"
-        "/help - المساعدة"
-    )
+    return "مرحباً بك في Forge AI.\nاكتب طلبك أو استخدم /templates"
 
 
 def menu_message():
     return (
-        "القائمة الرئيسية:\n\n"
-        "1. اسأل سؤالاً مباشراً\n"
-        "2. اطلب ملخصاً\n"
-        "3. اطلب شرحاً\n"
-        "4. اطلب خطة عمل\n"
-        "5. اطلب فكرة مشروع\n\n"
-        "مثال:\n"
-        "اريد خطة لمشروع ذكاء اصطناعي"
+        "القائمة:\n"
+        "/templates - توليد Templates\n"
+        "اكتب طلبك مباشرة"
     )
 
 
-def about_message():
+def templates_menu():
     return (
-        "شركة العراق الرقمية\n\n"
-        "منصة تقنية تهدف إلى بناء حلول ذكية باستخدام الذكاء الاصطناعي، "
-        "الأتمتة، وتطبيقات الويب لخدمة الأفراد والشركات."
+        "أنواع التوليد:\n\n"
+        "1) flask bot\n"
+        "2) api service\n"
+        "3) ai assistant\n\n"
+        "مثال:\n"
+        "generate flask bot with telegram"
     )
 
 
-def process_message(text):
+# ========================
+# ROUTER
+# ========================
+
+def route_request(text):
+    text_lower = text.lower()
+
+    if "flask" in text_lower:
+        return generate_template("flask_bot", text)
+
+    if "api" in text_lower:
+        return generate_template("api_service", text)
+
+    if "ai" in text_lower:
+        return generate_template("ai_assistant", text)
+
+    return process_ai(text)
+
+
+# ========================
+# TEMPLATE GENERATOR
+# ========================
+
+def generate_template(template_type, user_input):
+    prompt = f"""
+أنت مولد قوالب برمجية احترافي.
+
+المطلوب:
+- توليد كود كامل فقط
+- بدون شرح
+- جاهز للتنفيذ
+
+نوع القالب: {template_type}
+
+طلب المستخدم:
+{user_input}
+"""
+
+    return call_groq(prompt)
+
+
+# ========================
+# AI RESPONSE
+# ========================
+
+def process_ai(text):
+    prompt = f"""
+أنت مساعد تقني.
+
+أجب بشكل مختصر ومنظم.
+
+{ text }
+"""
+    return call_groq(prompt)
+
+
+# ========================
+# GROQ
+# ========================
+
+def call_groq(prompt):
     url = "https://api.groq.com/openai/v1/chat/completions"
 
     headers = {
@@ -89,43 +130,31 @@ def process_message(text):
         "Content-Type": "application/json"
     }
 
-    system_prompt = """
-أنت مساعد ذكي تابع لشركة العراق الرقمية.
-
-قواعد الإجابة:
-- استخدم العربية الفصحى الواضحة.
-- كن دقيقاً ومباشراً.
-- لا تستخدم كلمات أجنبية إلا عند الضرورة التقنية.
-- لا تخترع معلومات.
-- اجعل الرد منظماً بعناوين ونقاط عند الحاجة.
-- إذا كان السؤال عاماً جداً، اطلب توضيحاً مختصراً.
-- إذا طُلب ملخص، قدم تعريفاً مختصراً ثم نقاطاً أساسية ثم أمثلة.
-- إذا طُلبت خطة، قدم خطوات عملية مرتبة.
-"""
-
     data = {
         "model": "llama-3.1-8b-instant",
-        "temperature": 0.3,
+        "temperature": 0.2,
         "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": text}
+            {"role": "system", "content": prompt}
         ]
     }
 
     response = requests.post(url, headers=headers, json=data, timeout=30)
 
     if response.status_code != 200:
-        return "تعذر الحصول على رد حالياً. حاول مرة أخرى بعد قليل."
+        return "AI Error"
 
     result = response.json()
-
     return result["choices"][0]["message"]["content"]
 
+
+# ========================
+# TELEGRAM
+# ========================
 
 def send_message(chat_id, text):
     url = f"{TELEGRAM_API}/sendMessage"
     payload = {
         "chat_id": chat_id,
-        "text": text
+        "text": text[:4000]
     }
     requests.post(url, json=payload, timeout=30)
