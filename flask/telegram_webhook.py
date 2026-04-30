@@ -16,7 +16,10 @@ def handle_telegram():
     text = message.get("text", "")
 
     try:
-        reply = process_message(text)
+        if text == "/start":
+            reply = start_message()
+        else:
+            reply = process_message(text)
     except Exception:
         reply = "حدث خطأ مؤقت، حاول مرة أخرى"
 
@@ -24,6 +27,14 @@ def handle_telegram():
         send_message(chat_id, reply)
 
     return jsonify({"status": "ok"})
+
+
+def start_message():
+    return (
+        "مرحباً بك في شركة العراق الرقمية.\n\n"
+        "أنا مساعد ذكي يعمل بالذكاء الاصطناعي.\n"
+        "اكتب سؤالك مباشرة، أو اطلب ملخصاً، شرحاً، خطة، أو فكرة مشروع."
+    )
 
 
 def process_message(text):
