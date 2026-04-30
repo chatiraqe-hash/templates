@@ -7,19 +7,11 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
+
 def handle_telegram():
     data = request.json or {}
 
-    "messages": [
-    {
-        "role": "system",
-        "content": "أنت مساعد ذكي تابع لشركة العراق الرقمية. قدم إجابات دقيقة، مختصرة، ومفيدة باللغة العربية. إذا طُلب ملخص، قدم ملخص واضح ومنظم."
-    },
-    {
-        "role": "user",
-        "content": text
-    }
- ]
+    message = data.get("message", {})
     chat_id = message.get("chat", {}).get("id")
     text = message.get("text", "")
 
@@ -42,7 +34,14 @@ def process_message(text):
     data = {
         "model": "llama-3.1-8b-instant",
         "messages": [
-            {"role": "user", "content": text}
+            {
+                "role": "system",
+                "content": "أنت مساعد ذكي تابع لشركة العراق الرقمية. قدم إجابات دقيقة، مختصرة، ومفيدة باللغة العربية. إذا طُلب ملخص، قدم ملخص واضح ومنظم."
+            },
+            {
+                "role": "user",
+                "content": text
+            }
         ]
     }
 
