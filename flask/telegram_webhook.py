@@ -10,7 +10,16 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 def handle_telegram():
     data = request.json or {}
 
-    message = data.get("message", {})
+    "messages": [
+    {
+        "role": "system",
+        "content": "أنت مساعد ذكي تابع لشركة العراق الرقمية. قدم إجابات دقيقة، مختصرة، ومفيدة باللغة العربية. إذا طُلب ملخص، قدم ملخص واضح ومنظم."
+    },
+    {
+        "role": "user",
+        "content": text
+    }
+ ]
     chat_id = message.get("chat", {}).get("id")
     text = message.get("text", "")
 
