@@ -15,7 +15,10 @@ def handle_telegram():
     chat_id = message.get("chat", {}).get("id")
     text = message.get("text", "")
 
-    reply = process_message(text)
+    try:
+        reply = process_message(text)
+    except Exception:
+        reply = "حدث خطأ مؤقت، حاول مرة أخرى"
 
     if chat_id:
         send_message(chat_id, reply)
@@ -36,39 +39,30 @@ def process_message(text):
 
 التعليمات الصارمة:
 - استخدم العربية الفصحى فقط
-- لا تستخدم أي كلمات أجنبية (لا English ولا Russian)
-- لا تخترع مصطلحات
-- كن دقيق علمياً 100%
-- اكتب بأسلوب واضح ومنظم
-- استخدم عناوين + نقاط فقط
+- لا تستخدم أي كلمات أجنبية
+- كن دقيق علمياً
+- اكتب بأسلوب منظم
 - لا تكرر الجمل
-- لا تكتب مقدمات عامة
 
-عند طلب "ملخص":
-1) تعريف من سطر واحد فقط
-2) 3 إلى 5 نقاط أساسية صحيحة علمياً
-3) 2 إلى 3 أمثلة تطبيقية حقيقية وواضحة
+عند طلب ملخص:
+- تعريف مختصر
+- نقاط أساسية
+- أمثلة تطبيقية
 """
 
     data = {
         "model": "llama-3.1-8b-instant",
         "temperature": 0.3,
         "messages": [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": text
-            }
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": text}
         ]
     }
 
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code != 200:
-        return "حدث خطأ في الاتصال بالذكاء الاصطناعي"
+        return "تعذر الحصول على رد حالياً"
 
     result = response.json()
 
